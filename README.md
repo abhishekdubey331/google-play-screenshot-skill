@@ -1,23 +1,35 @@
-# ASO App Screenshot Generator Skill
+# App Screenshot Generator Skill
 
-A reusable skill for generating high-converting mobile store screenshots.
+Create polished, high-converting **Google Play** screenshots with a reusable agent workflow.
 
-## Origin and Credits
+Built for teams that want sharper store visuals without hand-designing every image.
 
-This project is adapted from the App Store-focused skill:
-`https://github.com/adamlyttleapps/claude-skill-aso-appstore-screenshots`
+## ✨ Preview
 
-This repository keeps the same core approach, but is tuned for **Google Play** screenshot workflows.
+Sample screenshot set:
 
-It guides an agent through:
-1. Discovering the most compelling user benefits from your app.
-2. Pairing each benefit with the best simulator screenshot.
-3. Building polished, store-ready images with a deterministic layout plus AI enhancement.
+![Sample screenshot set](samples/showcase.png)
+
+Sample Google Play feature graphic (`1024x500`):
+
+![Sample feature graphic](samples/feature-graphic.png)
 
 The pipeline is Google Play-only:
 - Google Play (Android portrait default: `1242x2208`)
 
-## Repository Contents
+## Highlights
+
+- Discover the strongest app benefits to feature
+- Pair each benefit with the right simulator screenshot
+- Generate store-ready layouts with deterministic composition
+- Optionally enhance final images with AI
+
+## Credits
+
+Adapted from Adam Lyttle's App Store-focused skill:
+[claude-skill-aso-appstore-screenshots](https://github.com/adamlyttleapps/claude-skill-aso-appstore-screenshots)
+
+## 📦 Repository Contents
 
 - `SKILL.md`: Skill workflow and prompting logic.
 - `compose.py`: Deterministic screenshot scaffold generator.
@@ -26,10 +38,11 @@ The pipeline is Google Play-only:
 - `showcase.py`: Side-by-side preview generator.
 - `assets/`: Frame templates used by the composer.
 
-## Prerequisites
+## ✅ Prerequisites
 
 - Python 3.10+
 - Pillow
+- `rsync` (optional, used by the installer when available)
 - SF Pro fonts on macOS (optional, recommended for best typography)
 - Gemini MCP server for AI image enhancement (`@houtini/gemini-mcp`)
 
@@ -46,9 +59,9 @@ npm install -g @houtini/gemini-mcp
 ```
 
 Then register it in your agent MCP config so image generation/edit tools are available.
-Reference setup: `https://github.com/nicobailon/gemini-mcp`
+Reference setup: [nicobailon/gemini-mcp](https://github.com/nicobailon/gemini-mcp)
 
-## Install The Skill Locally
+## ⚙️ Install The Skill Locally
 
 Use the helper installer (recommended):
 
@@ -72,19 +85,19 @@ mkdir -p ~/.claude/skills/aso-store-screenshots
 cp -R . ~/.claude/skills/aso-store-screenshots
 ```
 
-## Platform Compatibility
+## 🧩 Platform Compatibility
 
-This repo is structured to stay portable across agent platforms:
+This repo is structured to work across multiple agent platforms:
 
-- Shared core workflow in `SKILL.md` (single source of truth)
+- Shared core workflow in `SKILL.md`
 - Platform install targets handled by `scripts/install-skill.sh`
 - Platform guidance and extension points in `docs/PLATFORMS.md`
 
-Today supported:
+Currently supported:
 - Codex (`~/.codex/skills/<skill-name>`)
 - Claude Code (`~/.claude/skills/<skill-name>`)
 
-## Quickstart
+## 🚀 Quickstart
 
 1. Install dependencies:
 
@@ -102,9 +115,16 @@ pip install -r requirements.txt
 - Claude Code: run `/aso-store-screenshots`
 - Codex: ask the agent to use `aso-store-screenshots`
 
-4. Follow the guided flow (benefits -> screenshot pairing -> generation).
+4. Follow the guided flow:
+- identify benefits
+- pair screenshots
+- generate polished outputs
 
-## Sample Assets
+Runtime note:
+- The current prompt workflow is authored for agents that support memory, image viewing, and image edit/generation tools via MCP or equivalent integrations.
+- For command examples inside `SKILL.md`, treat `[installed skill directory]` as the location used by your agent, such as `~/.codex/skills/aso-store-screenshots` or `~/.claude/skills/aso-store-screenshots`.
+
+## 🖼️ Sample Assets
 
 This repo includes ready sample files for local testing:
 
@@ -124,9 +144,9 @@ python3 showcase.py \
 
 `showcase.py` supports an optional footer link via `--github`, but it is omitted in the sample so the preview stays clean.
 
-## Usage (Direct Scripts)
+## 🛠️ Usage (Direct Scripts)
 
-These scripts are optional utilities used by the skill pipeline. Most users should run the skill via the quickstart above.
+These scripts are optional utilities used by the skill pipeline. Most users should use the installed skill first, then drop to direct scripts only when they want tighter control.
 
 Typical direct script usage:
 
@@ -157,6 +177,15 @@ python3 generate_feature_graphic.py \
   --output ./screenshots/feature-graphic.png
 ```
 
+Resize generated variants to the exact Play Store target:
+
+```bash
+python3 scripts/resize_outputs.py \
+  --target-w 1242 \
+  --target-h 2208 \
+  --inputs ./screenshots/01-track-card-prices/v1.jpg ./screenshots/01-track-card-prices/v2.jpg ./screenshots/01-track-card-prices/v3.jpg
+```
+
 Create showcase image:
 
 ```bash
@@ -166,12 +195,12 @@ python3 showcase.py \
   --github "https://github.com/<your-org>/<your-repo>"
 ```
 
-## Open Source Notes
+## 🔐 Open Source Notes
 
 - Keep generated output (`screenshots/`) out of version control.
 - Do not commit API keys, local MCP config, or private app screenshots.
 - Review `SKILL.md` prompts if you want to tune tone, phase ordering, or quality bars.
 
-## License
+## 📄 License
 
 MIT (see `LICENSE`).

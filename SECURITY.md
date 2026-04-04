@@ -4,7 +4,11 @@
 
 Please do not open public issues for suspected security vulnerabilities.
 
-Report security concerns privately to the maintainers with:
+Report security concerns privately using one of these channels:
+- GitHub Private Vulnerability Reporting for this repository, if enabled
+- Contact the repository owner privately through the contact options listed on their GitHub profile before disclosure
+
+Include:
 - A clear description of the issue
 - Reproduction steps
 - Potential impact

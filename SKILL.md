@@ -12,7 +12,7 @@ This is a multi-phase process. Follow each phase in order — but ALWAYS check m
 
 ## RECALL (Always Do This First)
 
-Before doing ANY codebase analysis, check the Claude Code memory system for all previously saved state for this app. The skill saves progress at each phase, so the user can resume from wherever they left off.
+Before doing ANY codebase analysis, check the agent memory system for all previously saved state for this app. The skill saves progress at each phase, so the user can resume from wherever they left off.
 
 **Check memory for each of these (in order):**
 
@@ -112,7 +112,7 @@ DO NOT proceed until the user explicitly confirms the benefits. This is an itera
 
 ### Step 5: Save to Memory
 
-Once the user confirms the final benefits, save them to the Claude Code memory system. Create or update a memory file (e.g., `aso_benefits.md`) with:
+Once the user confirms the final benefits, save them to the agent memory system. Create or update a memory file (e.g., `aso_benefits.md`) with:
 - The app name and bundle ID
 - The confirmed benefits list (in order), each with the full headline (ACTION VERB + BENEFIT DESCRIPTOR)
 - The target audience
@@ -134,7 +134,7 @@ Ask the user to provide their simulator screenshots. They can provide:
 - Individual file paths
 - Glob patterns (e.g., `~/Desktop/Simulator*.png`)
 
-Use the Read tool to view every simulator screenshot provided. Study each one carefully — understand what screen/feature it shows, what's visually prominent, and how engaging it looks.
+Use the available file/image viewing tool to inspect every simulator screenshot provided. Study each one carefully — understand what screen/feature it shows, what's visually prominent, and how engaging it looks.
 
 ### Step 2: Assess Each Screenshot
 
@@ -198,7 +198,7 @@ Let the user review and swap pairings before proceeding. Do NOT move to generati
 
 ### Step 6: Save to Memory
 
-Once pairings are confirmed, save the full screenshot analysis and pairings to the Claude Code memory system. Create or update a memory file (e.g., `aso_screenshot_pairings.md`) with:
+Once pairings are confirmed, save the full screenshot analysis and pairings to the agent memory system. Create or update a memory file (e.g., `aso_screenshot_pairings.md`) with:
 
 - **Every simulator screenshot provided** — file path, what it shows, rating (Great/Usable/Retake), and assessment notes
 - **The confirmed pairings** — which benefit maps to which screenshot file, and why
@@ -214,14 +214,14 @@ Once benefits and screenshot pairings are confirmed, generate the final store sc
 
 ### Prerequisites Check
 
-Before generating, verify the Gemini MCP server is available by checking that the `generate_image` tool exists. If it is NOT available, tell the user:
+Before generating, verify an image generation/edit tool is available via the current agent integration. If it is NOT available, tell the user:
 
 ```
 ⚠️ Gemini MCP server not detected. To generate screenshots, you need to set it up:
 
 1. Install: npm install -g gemini-mcp
-2. Add to your Claude Code MCP config (~/.claude/settings.json or project .mcp.json)
-3. Restart Claude Code
+2. Add it to your agent MCP/tool config
+3. Restart the agent session if needed
 4. Run this skill again
 
 See: https://github.com/nicobailon/gemini-mcp for setup instructions.
@@ -288,7 +288,7 @@ For each benefit + screenshot pair, generate **3 enhanced versions in parallel**
 
 **Step 0: Save brand colour to memory**
 
-Before generating any scaffolds, save the confirmed brand colour to the Claude Code memory system. Create or update the benefits memory file (e.g., `aso_benefits.md`) to include the brand colour name and hex code. This ensures the colour persists across conversations and is available immediately if the user resumes later.
+Before generating any scaffolds, save the confirmed brand colour to the agent memory system. Create or update the benefits memory file (e.g., `aso_benefits.md`) to include the brand colour name and hex code. This ensures the colour persists across conversations and is available immediately if the user resumes later.
 
 **Step 1: Create the scaffold with compose.py**
 
@@ -297,7 +297,7 @@ The compose.py script lives in the skill directory. Run it to create the determi
 **IMPORTANT — Batch all 3 scaffolds into a single Bash call** to minimize permission prompts. Chain the commands with `&&` so the user only needs to approve once:
 
 ```bash
-SKILL_DIR="$HOME/.claude/skills/aso-store-screenshots" && \
+SKILL_DIR="[installed skill directory]" && \
 mkdir -p screenshots/01-[benefit-slug] screenshots/02-[benefit-slug] screenshots/03-[benefit-slug] && \
 python3 "$SKILL_DIR/compose.py" \
   --bg "[HEX CODE]" --verb "[VERB 1]" --desc "[DESC 1]" \
@@ -321,9 +321,9 @@ This outputs store-ready scaffold PNGs with:
 
 The scaffolds are internal intermediates — do NOT show them to the user or ask for confirmation. Proceed immediately to Step 2 (Nano Banana enhancement).
 
-**Step 2: Enhance with Nano Banana Pro (3 versions in parallel)**
+**Step 2: Enhance with your configured image edit tool (3 versions in parallel)**
 
-Make **3 parallel `edit_image` calls**. The parallel execution is critical — always fire all 3 calls in a single message, never sequentially.
+Make **3 parallel image edit calls**. The parallel execution is critical — always fire all 3 calls in a single message, never sequentially.
 
 For each of the 3 calls, use:
 - `prompt`: Enhancement instructions (see prompt templates below — different for first vs subsequent screenshots)
@@ -399,24 +399,16 @@ No watermarks, no extra text, no store listing UI chrome.
 
 **Step 3: IMMEDIATELY crop and resize ALL 3 versions to the target store dimensions**
 
-⚠️ **You MUST run this immediately after all 3 `edit_image` calls complete. Do NOT show the user any image before running this. The raw Nano Banana output is rarely the right final upload dimensions.**
+⚠️ **You MUST run this immediately after all 3 image edit calls complete. Do NOT show the user any image before running this. The raw image-tool output is rarely the right final upload dimensions.**
 
-**CRITICAL — Use exactly ONE Bash tool call for all 3 crop/resize operations.** Do NOT make 3 separate Bash calls. Do NOT use parallel Bash calls. Use the single loop below so the user only sees one permission prompt:
+**CRITICAL — Use exactly ONE Bash tool call for all 3 crop/resize operations.** Do NOT make 3 separate Bash calls. Do NOT use parallel Bash calls. Use the helper script below so the user only sees one permission prompt:
 
 ```bash
-TARGET_W=1242 && TARGET_H=2208 && \
-for INPUT in screenshots/01-[benefit-slug]/v1.jpg screenshots/01-[benefit-slug]/v2.jpg screenshots/01-[benefit-slug]/v3.jpg; do
-  OUTPUT="${INPUT%.jpg}-resized.jpg"
-  cp "$INPUT" "$OUTPUT"
-  W=$(sips -g pixelWidth "$OUTPUT" | tail -1 | awk '{print $2}')
-  H=$(sips -g pixelHeight "$OUTPUT" | tail -1 | awk '{print $2}')
-  CROP_W=$(python3 -c "print(round($H * $TARGET_W / $TARGET_H))")
-  OFFSET_X=$(python3 -c "print(round(($W - $CROP_W) / 2))")
-  sips --cropOffset 0 $OFFSET_X --cropToHeightWidth $H $CROP_W "$OUTPUT"
-  sips -z $TARGET_H $TARGET_W "$OUTPUT"
-  echo "--- $OUTPUT ---"
-  sips -g pixelWidth -g pixelHeight "$OUTPUT"
-done
+SKILL_DIR="[installed skill directory]" && \
+python3 "$SKILL_DIR/scripts/resize_outputs.py" \
+  --target-w 1242 \
+  --target-h 2208 \
+  --inputs screenshots/01-[benefit-slug]/v1.jpg screenshots/01-[benefit-slug]/v2.jpg screenshots/01-[benefit-slug]/v3.jpg
 ```
 
 The script crops to the correct aspect ratio (top-center aligned — sides trimmed equally, top edge preserved so the headline stays put) and resizes to exact pixel dimensions. The resized image is saved as a separate file with `-resized.jpg` appended.
@@ -426,13 +418,13 @@ Target dimensions per store preset — adjust `TARGET_W` and `TARGET_H`:
 
 **Step 4: Review all 3 versions with the user**
 
-Present all 3 **resized** versions (the `-resized.jpg` files) to the user using the Read tool. Never show the raw Nano Banana output — always show the post-processed versions.
+Present all 3 **resized** versions (the `-resized.jpg` files) to the user using the available file/image viewing tool. Never show the raw image-tool output — always show the post-processed versions.
 
 Label them clearly as **Version 1**, **Version 2**, and **Version 3** and ask the user to pick their favourite or request changes.
 
 **Step 5: Iterate if needed**
 
-If the user wants changes, use `edit_image` with **three images** as input:
+If the user wants changes, use your image edit tool with **three images** as input:
 1. The **scaffold** (`scaffold.png`) — anchors the layout (text position, device placement, screenshot)
 2. The **style template** (the first approved screenshot from `screenshots/final/01-*.jpg`) — defines the device frame rendering and overall visual style that must be consistent across the entire set
 3. The **approved design** (the version the user liked best for this specific screenshot) — anchors the creative direction and breakout element approach
@@ -451,7 +443,7 @@ Generate a new version that keeps the layout from the scaffold, the device frame
 
 This prevents drift (scaffold keeps layout locked), maintains set-wide consistency (style template keeps device frame and visual treatment identical), and preserves the creative direction the user already approved.
 
-When iterating, generate **3 versions in parallel** again (3 parallel `edit_image` calls in a single message). Then **immediately run the Step 3 crop/resize loop on all 3 in a single Bash call** before showing the user.
+When iterating, generate **3 versions in parallel** again (3 parallel image edit calls in a single message). Then **immediately run the Step 3 crop/resize helper on all 3 in a single Bash call** before showing the user.
 
 Repeat until the user is happy.
 
@@ -513,7 +505,7 @@ Also tell the user exactly which target store preset each screenshot fits into.
 
 ### Save to Memory
 
-After each screenshot is generated (or after the full set is complete), save generation state to the Claude Code memory system. Create or update a memory file (e.g., `aso_generated_screenshots.md`) with:
+After each screenshot is generated (or after the full set is complete), save generation state to the agent memory system. Create or update a memory file (e.g., `aso_generated_screenshots.md`) with:
 
 - **Brand colour**: name + hex code
 - **Target display size**: e.g., Google Play Android portrait (1242x2208)
@@ -534,7 +526,7 @@ Update this memory **incrementally** — after each screenshot is approved, add 
 Once ALL screenshots in the set are approved and saved to `final/`, generate a showcase image that displays up to 3 of the final screenshots side-by-side with a GitHub link. Use the showcase.py script in the skill directory:
 
 ```bash
-SKILL_DIR="$HOME/.claude/skills/aso-store-screenshots"
+SKILL_DIR="[installed skill directory]"
 
 python3 "$SKILL_DIR/showcase.py" \
   --screenshots screenshots/final/01-*.jpg screenshots/final/02-*.jpg screenshots/final/03-*.jpg \
@@ -542,14 +534,14 @@ python3 "$SKILL_DIR/showcase.py" \
   --output screenshots/showcase.png
 ```
 
-Show the showcase image to the user using the Read tool. This is a shareable preview of the full screenshot set.
+Show the showcase image to the user using the available file/image viewing tool. This is a shareable preview of the full screenshot set.
 
 ### Feature Graphic (Optional)
 
 If the user also needs a Google Play **feature graphic** (`1024x500`), generate it after screenshot approval using `generate_feature_graphic.py`:
 
 ```bash
-SKILL_DIR="$HOME/.claude/skills/aso-store-screenshots"
+SKILL_DIR="[installed skill directory]"
 
 python3 "$SKILL_DIR/generate_feature_graphic.py" \
   --bg "[HEX CODE]" \

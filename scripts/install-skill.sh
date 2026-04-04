@@ -16,13 +16,23 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 copy_skill() {
   local target_dir="$1"
   mkdir -p "$target_dir"
-  rsync -a --delete \
-    --exclude ".git" \
-    --exclude ".DS_Store" \
-    --exclude "__pycache__" \
-    --exclude "*.pyc" \
-    --exclude "screenshots" \
-    "$ROOT_DIR"/ "$target_dir"/
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --delete \
+      --exclude ".git" \
+      --exclude ".DS_Store" \
+      --exclude "__pycache__" \
+      --exclude "*.pyc" \
+      --exclude "screenshots" \
+      "$ROOT_DIR"/ "$target_dir"/
+  else
+    echo "rsync not found; using cp fallback without delete semantics."
+    cp -R "$ROOT_DIR"/. "$target_dir"/
+    rm -rf "$target_dir/.git" \
+      "$target_dir/.DS_Store" \
+      "$target_dir/screenshots" \
+      "$target_dir/__pycache__"
+    find "$target_dir" -name "*.pyc" -delete
+  fi
   echo "Installed to: $target_dir"
 }
 
@@ -43,4 +53,3 @@ case "$PLATFORM" in
     exit 1
     ;;
 esac
-

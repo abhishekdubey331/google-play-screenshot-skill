@@ -1,13 +1,13 @@
 # Platform Adapters
 
-This project is designed as a single reusable skill with lightweight platform adapters.
+This project is designed as a single reusable skill with lightweight install adapters.
 
 ## Core vs Adapter
 
-- Core logic: `SKILL.md`, `compose.py`, `generate_frame.py`, `showcase.py`
+- Core logic: `SKILL.md`, `compose.py`, `generate_frame.py`, `generate_feature_graphic.py`, `showcase.py`
 - Adapter layer: install location + platform-specific tool availability
 
-The workflow should remain in `SKILL.md` as the source of truth. Platform differences should be handled as thin wrappers only.
+The workflow remains in `SKILL.md`, but runtime support depends on the agent exposing memory plus image view/edit/generation capabilities.
 
 ## Supported Platforms
 
@@ -19,12 +19,12 @@ The workflow should remain in `SKILL.md` as the source of truth. Platform differ
 - Skill path: `~/.claude/skills/<skill-name>`
 - Install: `./scripts/install-skill.sh claude`
 
-## Recommended Portability Rules
+## Current Scope
 
-1. Keep platform-specific paths out of the core prompt when possible.
-2. Use generic tool language in `SKILL.md` where capabilities overlap.
-3. Gate optional steps (for example, AI image enhancement) behind capability checks.
-4. Keep script interfaces stable and platform-neutral.
+1. Installation is supported for Codex and Claude Code.
+2. The prompt is written in agent-neutral language where practical.
+3. Full end-to-end runtime still requires compatible memory and image-tool support.
+4. Local Python scripts are platform-neutral; image-edit workflow depends on agent integrations.
 
 ## Adding Another Platform
 
@@ -32,4 +32,3 @@ The workflow should remain in `SKILL.md` as the source of truth. Platform differ
 2. Add a new case in `scripts/install-skill.sh`.
 3. Document platform-specific constraints here.
 4. Avoid forking `SKILL.md`; prefer one shared prompt unless behavior must diverge.
-
