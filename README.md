@@ -7,21 +7,21 @@ A reusable skill for generating high-converting mobile store screenshots.
 This project is adapted from the App Store-focused skill:
 `https://github.com/adamlyttleapps/claude-skill-aso-appstore-screenshots`
 
-This repository keeps the same core approach, but is tuned for **Google Play-first** screenshot workflows (while still supporting optional App Store outputs).
+This repository keeps the same core approach, but is tuned for **Google Play** screenshot workflows.
 
 It guides an agent through:
 1. Discovering the most compelling user benefits from your app.
 2. Pairing each benefit with the best simulator screenshot.
 3. Building polished, store-ready images with a deterministic layout plus AI enhancement.
 
-The pipeline is Google Play-first and also supports iOS/App Store exports:
+The pipeline is Google Play-only:
 - Google Play (Android portrait default: `1242x2208`)
-- Apple App Store (iPhone 6.7" default: `1290x2796`)
 
 ## Repository Contents
 
 - `SKILL.md`: Skill workflow and prompting logic.
 - `compose.py`: Deterministic screenshot scaffold generator.
+- `generate_feature_graphic.py`: Google Play feature graphic generator (`1024x500`).
 - `generate_frame.py`: Device frame asset generator.
 - `showcase.py`: Side-by-side preview generator.
 - `assets/`: Frame templates used by the composer.
@@ -30,7 +30,7 @@ The pipeline is Google Play-first and also supports iOS/App Store exports:
 
 - Python 3.10+
 - Pillow
-- SF Pro fonts on macOS (or adjust font paths in scripts)
+- SF Pro fonts on macOS (optional, recommended for best typography)
 - Gemini MCP server for AI image enhancement (`@houtini/gemini-mcp`)
 
 Install Python dependency:
@@ -111,6 +111,7 @@ This repo includes ready sample files for local testing:
 - Input simulator screenshots: `samples/simulator/`
 - Deterministic scaffold outputs: `samples/scaffolds/`
 - Showcase preview (no footer link): `samples/showcase.png`
+- Feature graphic sample (`1024x500`): `samples/feature-graphic.png`
 
 Regenerate sample assets:
 
@@ -143,6 +144,17 @@ Generate/refresh frame assets:
 
 ```bash
 python3 generate_frame.py
+```
+
+Generate a Google Play feature graphic (`1024x500`):
+
+```bash
+python3 generate_feature_graphic.py \
+  --bg "#2563EB" \
+  --title "TRACK" \
+  --subtitle "CARD PRICES LIVE" \
+  --screenshot ./simulator/price-screen.png \
+  --output ./screenshots/feature-graphic.png
 ```
 
 Create showcase image:

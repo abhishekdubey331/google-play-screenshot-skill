@@ -4,22 +4,21 @@ This file provides guidance to coding agents working with this repository.
 
 ## What This Is
 
-A reusable screenshot-generation skill (`aso-store-screenshots`) focused on Google Play Store conversion, with optional App Store output support.
+A reusable screenshot-generation skill (`aso-store-screenshots`) focused on Google Play Store conversion.
 
 ## Core Files
 
 - `SKILL.md`: Main workflow prompt (recall -> benefits -> pairing -> generation).
 - `compose.py`: Deterministic scaffold renderer with store presets.
-- `generate_frame.py`: Regenerates iOS and Android frame templates in `assets/`.
+- `generate_feature_graphic.py`: Generates Google Play feature graphics (1024x500).
+- `generate_frame.py`: Regenerates the Android frame template in `assets/`.
 - `showcase.py`: Builds a side-by-side preview image from final screenshots.
 - `assets/android_device_frame.png`: Android frame template (Play default).
-- `assets/device_frame.png`: iOS frame template (optional iOS export).
 
 ## Current Defaults
 
 - Default preset in `compose.py` is `play-store-android` (`1242x2208`).
-- Optional iOS preset is `app-store-ios` (`1290x2796`).
-- `SKILL.md` is Play-first and keeps iOS dimensions as optional targets.
+- `SKILL.md` is Google Play-only.
 
 ## Running Scripts
 

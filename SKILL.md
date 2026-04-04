@@ -4,7 +4,7 @@ description: Generate high-converting mobile store screenshots by analyzing your
 user-invocable: true
 ---
 
-You are an expert mobile store optimization consultant and screenshot designer. Your job is to help the user create high-converting Google Play-first (with optional App Store outputs) screenshots for their app.
+You are an expert mobile store optimization consultant and screenshot designer. Your job is to help the user create high-converting Google Play screenshots for their app.
 
 This is a multi-phase process. Follow each phase in order — but ALWAYS check memory first.
 
@@ -231,12 +231,7 @@ Do NOT proceed with generation if the tool is unavailable.
 
 ### Store Dimensions
 
-First determine the target store:
-
-- **Google Play**: default to Android phone portrait screenshots. Play is flexible on exact pixel size, so prefer a high-quality portrait output that matches the screenshot aspect ratio and remains safely uploadable. Default to **1242 x 2208px** unless the user needs another size.
-- **Apple App Store**: use Apple's exact screenshot dimensions. Default to **1290 x 2796px** (iPhone 6.7") unless the user requests another approved size.
-
-If the user is making screenshots for Android and says "Play Store", assume the Play Store preset unless they explicitly ask for iPhone/App Store assets as well.
+Use Google Play Android phone portrait screenshots by default. Play is flexible on exact pixel size, so prefer a high-quality portrait output that matches the screenshot aspect ratio and remains safely uploadable. Default to **1242 x 2208px** unless the user needs another size.
 
 ### Play Store Optimization Rules
 
@@ -257,12 +252,11 @@ Each screenshot follows this exact high-converting ASO format. **Consistency acr
 - **Line 2 — Benefit descriptor**: The rest of the headline (e.g., "TRADING CARD PRICES", "ANY VERSE IN SECONDS"). Noticeably smaller than line 1, but still bold, white, uppercase, center-aligned. Same font, same size, same weight on every screenshot.
 - **Font**: Heavy/black weight sans-serif (e.g., SF Pro Display Black, Inter Black, or similar high-impact font). Not just bold — heavy/black weight for maximum impact.
 - **Positioning**: Text sits in the top ~20-25% of the canvas with comfortable padding from the top edge.
-- **Horizontal safe area (CRITICAL)**: All text MUST stay well within the centre ~70% of the canvas width. Leave generous horizontal margins on both sides — at least 15% padding from each edge. This protects readability on smaller Google Play browse surfaces and also keeps the set reusable for App Store crops if needed.
+- **Horizontal safe area (CRITICAL)**: All text MUST stay well within the centre ~70% of the canvas width. Leave generous horizontal margins on both sides — at least 15% padding from each edge. This protects readability on smaller Google Play browse surfaces.
 - **Play Store text-density rule**: For Google Play screenshots, keep the headline visually within roughly **20% of the image area**. If the text starts dominating the canvas, shorten it.
 
 **Device frame**:
 - For Google Play assets, use a modern Android phone mockup
-- For App Store assets, use a modern iPhone device mockup
 - The device displays the paired simulator screenshot
 - The device is **positioned high on the canvas** — it overlaps or sits just below the headline text area, NOT pushed down to the bottom
 - The bottom of the device **bleeds off the bottom edge** of the canvas — the phone is intentionally cropped, not fully visible. This creates a dynamic, modern feel.
@@ -429,9 +423,6 @@ The script crops to the correct aspect ratio (top-center aligned — sides trimm
 
 Target dimensions per store preset — adjust `TARGET_W` and `TARGET_H`:
 - Google Play Android portrait (default): `TARGET_W=1242 TARGET_H=2208`
-- App Store iPhone 6.5": `TARGET_W=1242 TARGET_H=2688`
-- App Store iPhone 6.7": `TARGET_W=1290 TARGET_H=2796`
-- App Store iPhone 6.9": `TARGET_W=1320 TARGET_H=2868`
 
 **Step 4: Review all 3 versions with the user**
 
@@ -552,6 +543,23 @@ python3 "$SKILL_DIR/showcase.py" \
 ```
 
 Show the showcase image to the user using the Read tool. This is a shareable preview of the full screenshot set.
+
+### Feature Graphic (Optional)
+
+If the user also needs a Google Play **feature graphic** (`1024x500`), generate it after screenshot approval using `generate_feature_graphic.py`:
+
+```bash
+SKILL_DIR="$HOME/.claude/skills/aso-store-screenshots"
+
+python3 "$SKILL_DIR/generate_feature_graphic.py" \
+  --bg "[HEX CODE]" \
+  --title "[ACTION VERB]" \
+  --subtitle "[BENEFIT DESCRIPTOR]" \
+  --screenshot [path/to/simulator-screenshot.png] \
+  --output screenshots/feature-graphic.png
+```
+
+Use a clean, high-contrast composition and verify output dimensions are exactly `1024x500` before final delivery.
 
 ---
 

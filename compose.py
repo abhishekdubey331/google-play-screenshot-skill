@@ -3,9 +3,6 @@
 Store Screenshot Composer
 Composites headline text, device frame template, and app screenshot
 into a polished store-ready marketing image.
-
-Defaults to a Play Store/Android portrait canvas, but also supports
-an App Store/iPhone preset for reuse across stores.
 """
 
 import argparse
@@ -29,20 +26,6 @@ PRESETS = {
         "verb_size_min": 132,
         "desc_size": 102,
         "max_text_ratio": 0.74,
-    },
-    "app-store-ios": {
-        "canvas_w": 1290,
-        "canvas_h": 2796,
-        "device_w": 1030,
-        "device_y": 720,
-        "bezel": 15,
-        "screen_corner_r": 62,
-        "frame_path": os.path.join(ASSET_DIR, "device_frame.png"),
-        "text_top": 200,
-        "verb_size_max": 256,
-        "verb_size_min": 150,
-        "desc_size": 124,
-        "max_text_ratio": 0.70,
     },
 }
 
@@ -75,11 +58,17 @@ def fit_font(text, max_w, size_max, size_min):
     """Return the largest font size where text fits within max_w."""
     dummy = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
     for size in range(size_max, size_min - 1, -4):
-        font = ImageFont.truetype(FONT_PATH, size)
+        try:
+            font = ImageFont.truetype(FONT_PATH, size)
+        except OSError:
+            return ImageFont.load_default()
         bbox = dummy.textbbox((0, 0), text, font=font)
         if (bbox[2] - bbox[0]) <= max_w:
             return font
-    return ImageFont.truetype(FONT_PATH, size_min)
+    try:
+        return ImageFont.truetype(FONT_PATH, size_min)
+    except OSError:
+        return ImageFont.load_default()
 
 
 def draw_centered(draw, y, text, font, canvas_w, max_w=None):
@@ -120,7 +109,10 @@ def compose(bg_hex, verb, desc, screenshot_path, output_path, preset_name):
         preset["verb_size_max"],
         preset["verb_size_min"]
     )
-    desc_font = ImageFont.truetype(FONT_PATH, preset["desc_size"])
+    try:
+        desc_font = ImageFont.truetype(FONT_PATH, preset["desc_size"])
+    except OSError:
+        desc_font = ImageFont.load_default()
 
     # Measure total text block height (dry run at y=0)
     dummy = ImageDraw.Draw(Image.new("RGBA", (1, 1)))

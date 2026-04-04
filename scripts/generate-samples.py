@@ -15,6 +15,7 @@ from PIL import Image, ImageDraw
 ROOT = Path(__file__).resolve().parents[1]
 SIM_DIR = ROOT / "samples" / "simulator"
 SCAFFOLD_DIR = ROOT / "samples" / "scaffolds"
+FEATURE_GRAPHIC = ROOT / "samples" / "feature-graphic.png"
 
 SAMPLE_SCREENS = [
     ("screen-01-market.png", "Market Dashboard", "#1F6FEB"),
@@ -89,7 +90,28 @@ def main() -> None:
         make_simulator_image(filename, title, accent)
     for verb, desc, sim_name, output_name in SAMPLE_COMPOSE:
         run_compose(verb, desc, sim_name, output_name)
-    print("Generated samples in samples/simulator and samples/scaffolds")
+    run_feature_graphic()
+    print("Generated samples in samples/simulator, samples/scaffolds, and samples/feature-graphic.png")
+
+
+def run_feature_graphic() -> None:
+    feature_py = ROOT / "generate_feature_graphic.py"
+    screenshot = SIM_DIR / "screen-01-market.png"
+    cmd = [
+        sys.executable,
+        str(feature_py),
+        "--bg",
+        "#2563EB",
+        "--title",
+        "TRACK",
+        "--subtitle",
+        "CARD PRICES LIVE",
+        "--screenshot",
+        str(screenshot),
+        "--output",
+        str(FEATURE_GRAPHIC),
+    ]
+    subprocess.run(cmd, check=True)
 
 
 if __name__ == "__main__":
