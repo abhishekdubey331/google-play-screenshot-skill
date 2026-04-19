@@ -2,6 +2,8 @@
 
 [![Featured in Android Weekly #723](https://img.shields.io/badge/Featured%20in-Android%20Weekly%20%23723-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://androidweekly.net/issues/723)
 
+> Featured by Android Weekly for open-source developer tooling.
+
 Create polished, high-converting **Google Play** screenshots with a reusable agent workflow.
 
 Built for teams that want sharper store visuals without hand-designing every image.
