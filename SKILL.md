@@ -210,24 +210,23 @@ This is critical for resumability. If the user comes back in a new conversation,
 
 ## GENERATION
 
-Once benefits and screenshot pairings are confirmed, generate the final store screenshots using Nano Banana Pro (via the Gemini MCP server).
+Once benefits and screenshot pairings are confirmed, generate the final store screenshots using Nano Banana Pro. Use the Gemini MCP server by default. If the user has selected Atlas Cloud and `ATLASCLOUD_API_KEY` is set, use the bundled `atlas_enhance.py` client instead.
 
 ### Prerequisites Check
 
-Before generating, verify an image generation/edit tool is available via the current agent integration. If it is NOT available, tell the user:
+Before generating, verify either an image generation/edit tool is available via the current agent integration or `ATLASCLOUD_API_KEY` is set for `atlas_enhance.py`. Do not switch providers implicitly. If neither option is available, tell the user:
 
 ```
-⚠️ Gemini MCP server not detected. To generate screenshots, you need to set it up:
+No image enhancement provider is configured. Choose one:
 
-1. Install: npm install -g gemini-mcp
-2. Add it to your agent MCP/tool config
-3. Restart the agent session if needed
-4. Run this skill again
+1. Install and configure Gemini MCP: npm install -g gemini-mcp
+2. Or set ATLASCLOUD_API_KEY to use atlas_enhance.py
+3. Restart the agent session if needed, then run this skill again
 
 See: https://github.com/nicobailon/gemini-mcp for setup instructions.
 ```
 
-Do NOT proceed with generation if the tool is unavailable.
+Do NOT proceed with generation if the selected provider is unavailable.
 
 ### Store Dimensions
 
@@ -321,9 +320,9 @@ This outputs store-ready scaffold PNGs with:
 
 The scaffolds are internal intermediates — do NOT show them to the user or ask for confirmation. Proceed immediately to Step 2 (Nano Banana enhancement).
 
-**Step 2: Enhance with your configured image edit tool (3 versions in parallel)**
+**Step 2: Enhance with your configured image edit provider (3 versions)**
 
-Make **3 parallel image edit calls**. The parallel execution is critical — always fire all 3 calls in a single message, never sequentially.
+With Gemini MCP, make **3 parallel image edit calls** in a single message. With Atlas Cloud, invoke `atlas_enhance.py` once per intentional variant; each invocation performs exactly one generation POST and never retries that POST. Do not rerun an Atlas command after an ambiguous submit result because it may create a duplicate billable task.
 
 For each of the 3 calls, use:
 - `prompt`: Enhancement instructions (see prompt templates below — different for first vs subsequent screenshots)
@@ -332,6 +331,21 @@ For each of the 3 calls, use:
   - `./screenshots/01-[benefit-slug]/v1.jpg`
   - `./screenshots/01-[benefit-slug]/v2.jpg`
   - `./screenshots/01-[benefit-slug]/v3.jpg`
+
+For Atlas Cloud, pass the scaffold with `--input`, add the approved first screenshot
+with `--reference` for subsequent screenshots, and use PNG output paths:
+
+```bash
+python3 "[installed skill directory]/atlas_enhance.py" \
+  --input ./screenshots/01-[benefit-slug]/scaffold.png \
+  --prompt "[enhancement prompt]" \
+  --output ./screenshots/01-[benefit-slug]/v1.png
+```
+
+The client verifies the live Atlas model catalog and schema, uploads input images,
+submits one edit task, polls with bounded GET retries, and atomically saves the
+result. It defaults to a 9:16, 2k PNG result; use the existing resize step for the
+exact `1242x2208` Play Store dimensions.
 
 #### First screenshot (no approved template yet)
 

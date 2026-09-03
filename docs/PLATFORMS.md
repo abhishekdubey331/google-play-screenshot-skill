@@ -23,8 +23,8 @@ The workflow remains in `SKILL.md`, but runtime support depends on the agent exp
 
 1. Installation is supported for Codex and Claude Code.
 2. The prompt is written in agent-neutral language where practical.
-3. Full end-to-end runtime still requires compatible memory and image-tool support.
-4. Local Python scripts are platform-neutral; image-edit workflow depends on agent integrations.
+3. Full end-to-end runtime still requires compatible memory plus either image-tool support or an Atlas Cloud API key.
+4. Local Python scripts are platform-neutral. `atlas_enhance.py` provides an optional direct image-edit path when `ATLASCLOUD_API_KEY` is configured; Gemini MCP remains the default agent integration.
 
 ## Adding Another Platform
 
