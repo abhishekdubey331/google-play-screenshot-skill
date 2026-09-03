@@ -37,6 +37,7 @@ Adapted from Adam Lyttle's App Store-focused skill:
 
 - `SKILL.md`: Skill workflow and prompting logic.
 - `compose.py`: Deterministic screenshot scaffold generator.
+- `atlas_enhance.py`: Optional Atlas Cloud image enhancement client.
 - `generate_feature_graphic.py`: Google Play feature graphic generator (`1024x500`).
 - `generate_frame.py`: Device frame asset generator.
 - `showcase.py`: Side-by-side preview generator.
@@ -48,7 +49,8 @@ Adapted from Adam Lyttle's App Store-focused skill:
 - Pillow
 - `rsync` (optional, used by the installer when available)
 - SF Pro fonts on macOS (optional, recommended for best typography)
-- Gemini MCP server for AI image enhancement (`@houtini/gemini-mcp`)
+- Gemini MCP server for AI image enhancement (`@houtini/gemini-mcp`, default), or
+- an Atlas Cloud API key for the optional `atlas_enhance.py` path
 
 Install Python dependency:
 
@@ -64,6 +66,23 @@ npm install -g @houtini/gemini-mcp
 
 Then register it in your agent MCP config so image generation/edit tools are available.
 Reference setup: [nicobailon/gemini-mcp](https://github.com/nicobailon/gemini-mcp)
+
+Alternatively, set `ATLASCLOUD_API_KEY` and use the bundled Atlas Cloud client. It
+checks the live model catalog and schema before each run, uploads the scaffold,
+submits one image edit request without automatic POST retries, polls the result,
+and saves it locally:
+
+```bash
+export ATLASCLOUD_API_KEY="your-key"
+python3 atlas_enhance.py \
+  --input screenshots/01-track/scaffold.png \
+  --prompt "Keep all text and app UI unchanged; polish the device frame." \
+  --output screenshots/01-track/v1.png
+```
+
+Add `--reference screenshots/final/01-track.png` for subsequent screenshots that
+must follow an approved style. Use `--dry-run` to validate the current model schema
+without uploading an image or creating a generation task.
 
 ## ⚙️ Install The Skill Locally
 
